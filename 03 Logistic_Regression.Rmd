@@ -1,0 +1,96 @@
+---
+title: "Cell-to-Cell Logistic Regression"
+author: "Andres Oliden"
+date: "11/1/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+# Clear All Variables & Clear the Screen
+rm(list=ls())
+cat("\014")
+
+# Read the Data
+Cell <- read.csv("C:/Users/andre/Dropbox/School/Washington/Quarter 2/513 - Cusomter Analytics/Cell2Cell_Data.csv")
+
+# Explore the Data
+str("")
+summary("Cell")
+```
+
+
+```{r}
+## Linear Regression ##
+lm1 <- lm(revenue ~ mou+recchrge+directas+ overage+roam+changem+changer+dropvce+blckvce+unansvce+custcare+threeway+mourec+outcalls+incalls+peakvce+opeakvce+dropblk+callfwdv+callwait+churn+months+uniqsubs+actvsubs+phones+models+eqpdays+age1+age2+children+credita+creditaa+creditb+creditc+creditde+creditgy+creditz+prizmrur+prizmub+prizmtwn+webcap+truck+rv+occprof+occcler+occcrft+occstud+occhmkr+occret+occself+ownrent+marryun+marryyes+marryno+mailord+mailres+mailflag+travel+pcown+creditcd+retcalls+newcelly+newcelln+refer+incmiss+income+mcycle+creditad+setprcm+setprc+retcall+calibrat, data=Cell)
+
+# Make Sure to Print out Code
+summary(Cell)
+```
+
+
+```{r}
+# Define TRAINING Data (i.e, using the FIRST 200 IDs)
+Training.Data <- Cell[1:200,]
+
+# Run the Binary Logit Model (includes an INTERCEPT)
+glm.model.a <- glm(credita ~ revenue + mou + overage + roam + outcalls + incalls + months + eqpdays + age1 + age2 + children, family=binomial(link='logit'), data=Cell)
+
+glm.model.aa <- glm(creditaa ~ revenue + mou + overage + roam + outcalls + incalls + months + eqpdays + age1 + age2 + children, family=binomial(link='logit'), data=Cell)
+
+glm.model.b <- glm(creditb ~ revenue + mou + overage + roam + outcalls + incalls + months + eqpdays + age1 + age2 + children, family=binomial(link='logit'), data=Cell)
+
+glm.model.c <- glm(creditc ~ revenue + mou + overage + roam + outcalls + incalls + months + eqpdays + age1 + age2 + children, family=binomial(link='logit'), data=Cell)
+
+glm.model.de <- glm(creditde ~ revenue + mou + overage + roam + outcalls + incalls + months + eqpdays + age1 + age2 + children, family=binomial(link='logit'), data=Cell)
+
+glm.model.gy <- glm(creditgy ~ revenue + mou + overage + roam + outcalls + incalls + months + eqpdays + age1 + age2 + children, family=binomial(link='logit'), data=Cell)
+
+glm.model.z <- glm(creditz ~ revenue + mou + overage + roam + outcalls + incalls + months + eqpdays + age1 + age2 + children, family=binomial(link='logit'), data=Cell)
+
+# Display Results
+summary(glm.model.a)
+summary(glm.model.aa)
+summary(glm.model.b)
+summary(glm.model.c)
+summary(glm.model.de)
+summary(glm.model.gy)
+summary(glm.model.z)
+```
+
+
+```{r}
+# Define TESTING Data (i.e, IDs 201-500)
+Training.Data <- Cell[201:500,]
+
+# Predicting Buy/No Buy for the 300 TESTING IDs based on the Model Estimates
+(prediction.testing <- data.frame(ID = Training.Data$ID,
+                                  BinaryLogitProbability = predict(glm.model.a, Training.Data, type = c("response")),
+
+BinaryLogitPredict = round(predict(glm.model.a, Training.Data, type = c("response")), digits = 0)))
+
+# Prediciton of Number of Buyers
+sum(prediction.testing["BinaryLogitPredict"])
+sum(prediction.testing["BinaryLogitProbability"])
+
+# Histogram of Props
+hist(prediction.testing$BinaryLogitProbability, main = paste("Histogram of Response Probs"), xlab = "Prob of Response")
+
+# Confusion Matrix
+library(gmodels)
+CrossTable(Training.Data$credita, prediction.testing$BinaryLogitPredict,prop.r=TRUE, prop.c=FALSE, prop.t=FALSE,
+           prop.chisq=FALSE, dnn = c("Real Response", "Predicted Response"))
+
+# Exporting the Predictions to Excel
+# You can open a csv file in xl
+write.csv(prediction.testing, file = "Prediction_Testing.csv")
+
+```
+
+
+
